@@ -20,7 +20,7 @@ void object_detector(){
     while(state == state1){
         // Object Detector FSM
 
-        switch(state_object_detector){
+        switch(state_object_detector){  // waits for GUI to play 'start'
         case detector_sleep:
 //            lcd_init();
 //            lcd_puts("Object Detector");
