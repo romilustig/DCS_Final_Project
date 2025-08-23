@@ -11,8 +11,8 @@ import serial as ser
 import matplotlib
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
-import matplotlib.cm as cm
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+
 
 # -----------------------
 # Globals & thresholds
@@ -56,7 +56,7 @@ def send_command(char):
     time.sleep(0.05)
 
 
-def command_encoder(data_str):
+def file_command_encoder(data_str):
     translated_string = ""
     lines = data_str.split('\n')
     for line in lines:
@@ -167,59 +167,43 @@ def find_fitting_index(ldr1_value, ldr2_value):
             fitting_value = calibration_arr[0]
     return 49 - calibration_arr.index(fitting_value)
 
-# -----------------------
-# Plot windows (Tkinter)
-# -----------------------
+import mplcursors
 
 def draw_scanner_map(distances, angles):
     win = tk.Toplevel()
     win.title("Scanner Map")
-    win.geometry("820x860")
+    win.geometry("950x500")
 
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(111, polar=True)
 
-    min_distance = min(distances) if distances else 0
+    # Horizontal layout: 0° at right, 180° at left
+    ax.set_theta_zero_location("E")
+    ax.set_theta_direction(1)
+    ax.set_thetamin(0)
+    ax.set_thetamax(180)
+
     max_distance = max(distances) if distances else 50
-    norm = plt.Normalize(vmin=min_distance, vmax=max_distance)
-    cmap = cm.get_cmap('coolwarm')
+    if max_distance == 0:
+        max_distance = 50
 
-    for distance, angle in zip(distances, angles):
-        rad_angle = math.radians(angle)
-        color = cmap(1 - norm(distance))
-        ax.scatter(rad_angle, distance, color=color, s=10)
+    # scatter all points in one artist (black objects)
+    rad_angles = [math.radians(a) for a in angles]
+    ax.scatter(rad_angles, distances, color="black", s=40, alpha=0.8, edgecolors="k")
 
-    radii = ax.get_yticks()
-    for radius in radii[1:]:
-        ax.text(0, radius, str(radius), ha='center', va='bottom', fontsize=8)
+    # style
+    ax.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
+    ax.set_facecolor("#f5f5f5")
 
     padding = max_distance * 0.1
     ax.set_ylim(0, max_distance + padding)
-    ax.set_yticklabels([])
-    ax.set_xticklabels([])
 
-    ax.spines["polar"].set_visible(True)
-    ax.spines["polar"].set_color("black")
-    ax.spines["polar"].set_linewidth(0.5)
-    ax.spines["polar"].set_position(("data", 0))
+    for radius in ax.get_yticks()[1:]:
+        ax.text(math.radians(90), radius, f"{int(radius)} cm",
+                ha="center", va="bottom", fontsize=8)
 
-    for spine in ax.spines.values():
-        if getattr(spine, 'spine_type', '') != "polar":
-            spine.set_visible(False)
-
-    ax.set_ylim(0, max_distance + padding * 0.3)
-    ax.set_xticks(ax.get_xticks()[::2])
-    ax.set_xticklabels([str(int(math.degrees(tick))) + "°" for tick in ax.get_xticks()])
-
-    if angles:
-        start_angle = angles[0] - 5
-        end_angle = angles[-1] - 5
-        if start_angle != 0:
-            ax.plot([math.radians(start_angle), math.radians(start_angle)], [0, max_distance], 'k-', linewidth=3)
-            ax.text(math.radians(start_angle), max_distance + padding * 0.15, f"{start_angle}°", ha='center', va='center', fontsize=15)
-        if end_angle != 180:
-            ax.plot([math.radians(end_angle), math.radians(end_angle)], [0, max_distance], 'k-', linewidth=3)
-            ax.text(math.radians(end_angle), max_distance + padding * 0.15, f"{end_angle}°", ha='center', va='center', fontsize=15)
+    ax.set_xticks([math.radians(a) for a in range(0, 181, 30)])
+    ax.set_xticklabels([f"{a}°" for a in range(0, 181, 30)], fontsize=9)
 
     canvas = FigureCanvasTkAgg(fig, master=win)
     canvas.draw()
@@ -232,61 +216,49 @@ def draw_scanner_map(distances, angles):
 
 def draw_scanner_map_lights(distances, lights, angles):
     win = tk.Toplevel()
-    win.title("Scanner Map")
-    win.geometry("820x860")
+    win.title("Scanner Map - Lights")
+    win.geometry("950x500")
 
-    fig = plt.figure(figsize=(8, 8))
+    fig = plt.figure(figsize=(10, 5))
     ax = fig.add_subplot(111, polar=True)
+
+    # Horizontal layout: 0° at right, 180° at left
+    ax.set_theta_zero_location("E")
+    ax.set_theta_direction(1)
+    ax.set_thetamin(0)
+    ax.set_thetamax(180)
 
     max_distance = max(distances) if distances else 50
     if max_distance == 0:
         max_distance = 50
 
-    i = j = 0
-    for distance, light, angle in zip(distances, lights, angles):
-        rad_angle = math.radians(angle)
-        if light > 0 and distance < 50:
-            color = "yellow"
-            ax.scatter(rad_angle, distance, color=color, s=50, edgecolors='black', label="Light Source" if i == 0 else "")
-            i += 1
-        else:
-            color = "black"
-            ax.scatter(rad_angle, distance, color=color, s=10, label="Object" if j == 0 else "")
-            j += 1
+    rad_angles = [math.radians(a) for a in angles]
+    colors = ["yellow" if (l > 0 and d < 50) else "black"
+              for d, l in zip(distances, lights)]
+    sizes = [80 if (l > 0 and d < 50) else 30
+             for d, l in zip(distances, lights)]
 
-    ax.legend()
+    ax.scatter(rad_angles, distances, c=colors, s=sizes,
+               edgecolors="black", alpha=0.85)
+
+    # legend with one entry each
+    ax.scatter([], [], c="yellow", s=80, edgecolors="black", label="Light Source")
+    ax.scatter([], [], c="black", s=30, label="Object")
+    ax.legend(loc="upper right", bbox_to_anchor=(1.2, 1.1))
+
+    # style
+    ax.grid(True, linestyle="--", linewidth=0.6, alpha=0.6)
+    ax.set_facecolor("#f5f5f5")
 
     padding = max_distance * 0.1
     ax.set_ylim(0, max_distance + padding)
-    ax.set_yticklabels([])
-    ax.set_xticklabels([])
 
-    radii = ax.get_yticks()
-    for radius in radii[1:]:
-        ax.text(0, radius, str(radius), ha='center', va='bottom', fontsize=8)
+    for radius in ax.get_yticks()[1:]:
+        ax.text(math.radians(90), radius, f"{int(radius)} cm",
+                ha="center", va="bottom", fontsize=8)
 
-    ax.spines["polar"].set_visible(True)
-    ax.spines["polar"].set_color("black")
-    ax.spines["polar"].set_linewidth(0.5)
-    ax.spines["polar"].set_position(("data", 0))
-
-    for spine in ax.spines.values():
-        if getattr(spine, 'spine_type', '') != "polar":
-            spine.set_visible(False)
-
-    ax.set_ylim(0, max_distance + padding * 0.3)
-    ax.set_xticks(ax.get_xticks()[::2])
-    ax.set_xticklabels([str(int(math.degrees(tick))) + "°" for tick in ax.get_xticks()])
-
-    if angles:
-        start_angle = angles[0] - 5
-        end_angle = angles[-1] - 5
-        if start_angle != 0:
-            ax.plot([math.radians(start_angle), math.radians(start_angle)], [0, max_distance], 'k-', linewidth=3)
-            ax.text(math.radians(start_angle), max_distance + padding * 0.15, f"{start_angle}°", ha='center', va='center', fontsize=15)
-        if end_angle != 180:
-            ax.plot([math.radians(end_angle), math.radians(end_angle)], [0, max_distance], 'k-', linewidth=3)
-            ax.text(math.radians(end_angle), max_distance + padding * 0.15, f"{end_angle}°", ha='center', va='center', fontsize=15)
+    ax.set_xticks([math.radians(a) for a in range(0, 181, 30)])
+    ax.set_xticklabels([f"{a}°" for a in range(0, 181, 30)], fontsize=9)
 
     canvas = FigureCanvasTkAgg(fig, master=win)
     canvas.draw()
@@ -297,7 +269,7 @@ def draw_scanner_map_lights(distances, lights, angles):
     win.wait_window()
 
 # -----------------------
-# Feature Windows (Tkinter)
+# Plot windows (Tkinter)
 # -----------------------
 
 def _make_toplevel(title: str) -> tuple[tk.Toplevel, ttk.Frame]:
@@ -617,58 +589,72 @@ def file_mode():
     ttk.Button(root, text="Browse", command=browse).grid(row=1, column=2, padx=6)
 
     # === Button grid ===
-    # Store references for controlling later
     button_refs = []
-
     for x in range(1, 11):  # slots 1–10
-        # Create buttons
-        btn_file = ttk.Button(root, text=f"Upload File_{x}", style="Action.TButton")
+        btn_file   = ttk.Button(root, text=f"Upload File_{x}",   style="Action.TButton")
         btn_script = ttk.Button(root, text=f"Upload Script_{x}", style="Action.TButton")
-        btn_play = ttk.Button(root, text=f"Play {x}", style="Action.TButton")
+        btn_play   = ttk.Button(root, text=f"Play {x}",          style="Action.TButton")
 
-        # Place them in same row, different columns
-        btn_file.grid(row=x + 2, column=0, padx=4, pady=3, sticky="ew")
-        btn_script.grid(row=x + 2, column=1, padx=4, pady=3, sticky="ew")
-        btn_play.grid(row=x + 2, column=2, padx=4, pady=3, sticky="ew")
-
-        # Save references if you want to attach logic later
+        btn_file.grid(  row=x+2, column=0, padx=4, pady=3, sticky="ew")
+        btn_script.grid(row=x+2, column=1, padx=4, pady=3, sticky="ew")
+        btn_play.grid(  row=x+2, column=2, padx=4, pady=3, sticky="ew")
         button_refs.append((btn_file, btn_script, btn_play))
 
-    # Back button (full width at bottom)
+    # Back button (full width at bottom of left section)
     btn_back = ttk.Button(root, text="Back", style="Action.TButton",
                           command=lambda: (send_command('0'), win.destroy()))
     btn_back.grid(row=13, column=0, columnspan=3, pady=(10, 5), sticky="ew")
 
-    # Make all columns expand equally and keep button size consistent
+    # Make columns 0..2 uniform; give column 3 (output) extra weight
     for c in range(3):
         root.grid_columnconfigure(c, weight=1, uniform="col")
+    root.grid_columnconfigure(3, weight=2)  # output pane grows more
 
-    # === Status label ===
+    # === OUTPUT PANE ON THE RIGHT (scrollable) ===
+    out_frame = ttk.Frame(root)
+    # Span most rows so it aligns next to the buttons
+    out_frame.grid(row=0, column=3, rowspan=16, sticky="nsew", padx=(10, 0), pady=4)
+
+    out_scroll = ttk.Scrollbar(out_frame, orient="vertical")
+    out = tk.Text(out_frame, wrap="word", yscrollcommand=out_scroll.set, width=48, height=28)
+    out_scroll.config(command=out.yview)
+
+    # Optional tags you already use
+    out.tag_configure("blue_text",  foreground="#1f6feb")
+    out.tag_configure("black_text", foreground="#000000")
+
+    # Layout inside frame
+    out.grid(row=0, column=0, sticky="nsew")
+    out_scroll.grid(row=0, column=1, sticky="ns")
+    out_frame.grid_rowconfigure(0, weight=1)
+    out_frame.grid_columnconfigure(0, weight=1)
+
+    # === Status label (put above or below output—your choice). Here below buttons:
     status_lbl = ttk.Label(root, text="", font=("Segoe UI", 10, "bold"))
     status_lbl.grid(row=14, column=0, columnspan=3, sticky="w", pady=(8, 2))
 
-    win.update_idletasks()  # Let Tk calculate layout
-    w = win.winfo_reqwidth()
-    h = win.winfo_reqheight()
-    win.geometry(f"{w}x{h}")
-    out = _make_output(root)
+    # (Optional) autosize window now that output exists
+    win.update_idletasks()
+    win.geometry(f"{win.winfo_reqwidth()}x{win.winfo_reqheight()}")
 
-    # === Functions to set button states ===
+    # === Enable/Disable helpers
     def set_controls(state: str):
         for trio in button_refs:
             for b in trio:
                 b.config(state=state)
-        btn_back.config(command=lambda: (send_command('0'), win.destroy()))
+        btn_back.config(state=state)  # <- you had a small bug setting command here
 
-    # === Example handlers (you can expand for all x) ===
-    def do_upload(slot: str):
+    # === Your handlers (unchanged, but consider calling out.see('end') after inserts)
+    def do_upload(slot: str, file_flag: bool):
         nonlocal path_var
-
         set_controls("disabled")
         send_command(slot)
         file_address = path_var.get()
-        with open(file_address) as script:
-            string = command_encoder(script.read())
+        with open(file_address) as file:
+            if file_flag:
+                string = file_command_encoder(file.read())
+            else:
+                string = file.read()
             command = str(len(string).to_bytes(1, 'big'))[2]
             send_command(command)
             send_data(string)
@@ -680,28 +666,63 @@ def file_mode():
         set_controls("disabled")
         send_command(slot)
         status_lbl.config(text=f"{label}, Please wait.")
-        # (Your opcode handling logic here...)
+        while True:
+            win.update()
+            opcode = receive_char()
+            opcode_dict = {
+                '1': "inc_lcd",
+                '2': "dec_lcd",
+                '3': "rra_lcd",
+                '4': "set_delay",
+                '5': "clear_lcd",
+                '6': "servo_deg",
+                '7': "servo_scan",
+                '8': "msp sleep"
+            }
+            out.insert("end", f"Playing Opcode {opcode}: ", "blue_text")
+            out.insert("end", f"({opcode_dict[opcode]})\n", "black_text")
+            out.see("end")  # auto-scroll
+
+            if opcode == '6':
+                distance = int(receive_data())
+                angle = int(receive_data())
+                out.insert("end", f"Distance: {distance} [cm], Angle: {angle} [deg]\n")
+                out.see("end")
+
+            elif opcode == '7':
+                distance_arr = []
+                angle1 = int(receive_data())
+                angle2 = int(receive_data())
+                while True:
+                    win.update()
+                    distance = int(receive_data())
+                    if distance == 500:
+                        break
+                    distance_arr.append(distance)
+                degree_arr = [
+                    round(float(angle1) + i * (float(angle2) - float(angle1)) / (len(distance_arr) - 1), 1)
+                    for i in range(len(distance_arr))
+                ]
+                out.insert("end", f"Distance array: {distance_arr}\n")
+                out.insert("end", f"Degree array: {degree_arr}\n")
+                out.see("end")
+                #draw_scanner_map(distance_arr, degree_arr)
+
+            elif opcode == '8':
+                break
+
         set_controls("normal")
 
     attach_dict = {
-        0:"AB",
-        1:"CD",
-        2:"EF",
-        3:"GH",
-        4:"IJ",
-        5:"KL",
-        6:"MN",
-        7:"OP",
-        8:"QR",
-        9:"ST",
+        0:"AB", 1:"CD", 2:"EF", 3:"GH", 4:"IJ",
+        5:"KL", 6:"MN", 7:"OP", 8:"QR", 9:"ST",
     }
-    # Attach handlers
-    for i,button in enumerate(button_refs):
-        button[0].config(command=lambda v=i: do_upload(attach_dict[v][0]))
-        button[1].config(command=lambda v=i: do_upload(attach_dict[v][0]))
-        button[2].config(command=lambda v=i: do_play(attach_dict[v][1],f"Playing {i+1}"))
+    for i, button in enumerate(button_refs):
+        button[0].config(command=lambda v=i: do_upload(slot=attach_dict[v][0], file_flag=True))
+        button[1].config(command=lambda v=i: do_upload(slot=attach_dict[v][0], file_flag=False))
+        # FIX: use v in the f-string too
+        button[2].config(command=lambda v=i: do_play(attach_dict[v][1], f"Playing {v+1}"))
 
-    # Status updater
     def update_status():
         global ACK
         status_map = {
