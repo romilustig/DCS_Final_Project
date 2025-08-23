@@ -12,6 +12,7 @@
 int d = 50;     // Timer delay value, may be changed by user in Script mode
 int val;        // Timer delay value, affected by 'd'
 int ISR_FLAG;   // A flag to decide which interrupt to handle on timer event
+int seg_flag_arr[3]= {0};
 
 //------------------------------------------------------------------------------  
 //                              GPIO configuration

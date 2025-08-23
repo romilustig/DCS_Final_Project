@@ -9,7 +9,7 @@ void object_detector();
 void telemeter();
 void light_detector();
 void light_object_detector();
-void script_fsm();
+void file_script_fsm();
 void move_servo(int);
 void servo_scan(int, int, int);
 void meas_and_send_distance();

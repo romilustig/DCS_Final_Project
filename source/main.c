@@ -55,9 +55,9 @@ void main(void){
 
     case state5:    // Script
         lcd_init();
-        lcd_puts("Script Mode");
+        lcd_puts("File/Script Mode");
         enable_interrupts();
-        script_fsm();
+        file_script_fsm();
         state = state0;
         break;
 

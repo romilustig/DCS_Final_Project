@@ -52,7 +52,7 @@ ScriptManager scriptManager = {
     .numScripts = 0,
     .filenames = {NULL},
     .scriptSizes = {0},
-    .file_location = {0x1000, 0x1040, 0x1080}
+    .file_location = {0xFA00, 0xFA40, 0xFA80, 0xFAC0, 0xFB00, 0xFB40, 0xFB80, 0xFBC0, 0xFC00, 0xFC40}
 };
 static volatile unsigned char *Flash_ptr;                          // Flash pointer
 char opcode [3] = {'0','0','\n'};
@@ -226,6 +226,16 @@ void init_flash_write(int addr){
     FCTL3 = FWKEY;                              // Clear Lock bit
     FCTL1 = FWKEY + ERASE;                      // Set Erase bit
     *Flash_ptr = 0;                             // Dummy write to erase Flash segment
+    while (FCTL3 & BUSY);
+    FCTL1 = FWKEY + WRT;                        // Set WRT bit for write operation
+}
+
+void cont_flash_write(int addr){
+    __disable_interrupt();
+    Flash_ptr = (volatile unsigned char *)addr; // Initialize Flash pointer  // 0x1000,0x1040,0x1080
+
+    while (FCTL3 & BUSY);
+    FCTL3 = FWKEY;                              // Clear Lock bit
     while (FCTL3 & BUSY);
     FCTL1 = FWKEY + WRT;                        // Set WRT bit for write operation
 }
@@ -600,7 +610,7 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
     }
     else{
         switch(UCA0RXBUF){
-            case 'Q':
+            case 'q':
                 exit(0);
                 break;
 
@@ -638,21 +648,21 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
                 break;
 
             case 'B':
+                state_script = play_file1;
+                break;
+
+            case 'C':
                 state_script = upload_file2;
                 scriptFlag = 1;
                 break;
 
-            case 'C':
-                state_script = upload_file3;
-                scriptFlag = 1;
-                break;
-
             case 'D':
-                state_script = play_file1;
+                state_script = play_file2;
                 break;
 
             case 'E':
-                state_script = play_file2;
+                state_script = upload_file3;
+                scriptFlag = 1;
                 break;
 
             case 'F':
@@ -660,27 +670,90 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
                 break;
 
             case 'G':
-                state_object_detector = detector_action;
+                state_script = upload_file4;
+                scriptFlag = 1;
                 break;
 
             case 'H':
+                state_script = play_file4;
+                break;
+
+            case 'I':
+                state_script = upload_file5;
+                scriptFlag = 1;
+                break;
+
+            case 'J':
+                state_script = play_file5;
+                break;
+
+            case 'K':
+                state_script = upload_file6;
+                scriptFlag = 1;
+                break;
+
+            case 'L':
+                state_script = play_file6;
+                break;
+
+            case 'M':
+                state_script = upload_file7;
+                scriptFlag = 1;
+                break;
+
+            case 'N':
+                state_script = play_file7;
+                break;
+
+            case 'O':
+                state_script = upload_file8;
+                scriptFlag = 1;
+                break;
+
+            case 'P':
+                state_script = play_file8;
+                break;
+
+            case 'Q':
+                state_script = upload_file9;
+                scriptFlag = 1;
+                break;
+
+            case 'R':
+                state_script = play_file9;
+                break;
+
+            case 'S':
+                state_script = upload_file10;
+                scriptFlag = 1;
+                break;
+
+            case 'T':
+                state_script = play_file10;
+                break;
+
+            case 'U': // was G
+                state_object_detector = detector_action;
+                break;
+
+            case 'V': // was H
                 tele_angle_flag = 1;
                 tele_index = 0;
                 state_telemeter = tele_action;
                 break;
 
-            case 'I':
+            case 'W': // was I
                 state_telemeter = tele_sleep;
 
-            case 'J':
+            case 'X': // was J
                 state_light_detector = light_calibrate;
                 break;
 
-            case 'K':
+            case 'Y': // was K
                 state_light_detector = light_scan;
                 break;
 
-            case 'X':
+            case 'Z': // was X
                 state_light_object_detector = light_object_scan;
                 break;
 

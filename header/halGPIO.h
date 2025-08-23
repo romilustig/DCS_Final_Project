@@ -51,7 +51,7 @@ extern int    arg1_int;
 extern int    arg2_int;
 extern char script_string [64];
 extern int script_length;
-#define MAX_SCRIPTS 3
+#define MAX_SCRIPTS 10
 #define MAX_FILENAME_LENGTH 8 // including "\0"
 
 typedef struct {
@@ -99,6 +99,7 @@ extern void pwmOutTrigConfig();
 
 extern void write_flash_char(char);
 extern void init_flash_write(int);
+extern void cont_flash_write(int);
 extern void disable_flash_write();
 
 extern void delay(unsigned int);

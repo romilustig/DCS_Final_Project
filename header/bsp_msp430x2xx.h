@@ -41,6 +41,7 @@ extern void FlashConfig(void);
 extern void lcd_init(void);
 extern int d;
 extern int ISR_FLAG;
+extern int seg_flag_arr[3];
 #define  debounceVal  250
 
 

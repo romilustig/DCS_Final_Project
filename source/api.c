@@ -167,7 +167,7 @@ void light_object_detector(){
 // 5. script menu FSM function
 //------------------------------------------------------------------------------
 
-void script_fsm(){
+void file_script_fsm(){
 
  state_script = sleep;
  while(state == state5){
@@ -182,7 +182,7 @@ void script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('1');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script0", script_length); // NEED TO ADD ARRAY OF POINTERS TO THE START ADDRRESS OF EVERY FILE
+        addScript("script1", script_length); // NEED TO ADD ARRAY OF POINTERS TO THE START ADDRRESS OF EVERY FILE
         flash_write(1);   // put script_string into flash
 
         state_script = sleep;
@@ -194,7 +194,7 @@ void script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('2');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script1", script_length);
+        addScript("script2", script_length);
         flash_write(2);   // put script_string into flash
 
 
@@ -207,8 +207,92 @@ void script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('3');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script2", script_length);
+        addScript("script3", script_length);
         flash_write(3);   // put script_string into flash
+
+        state_script = sleep;
+        break;
+
+    case upload_file4:
+        lcd_init();
+        lcd_puts("Uploading File 4");
+        enable_interrupts();
+        enterLPM(lpm_mode);  // expect to receive script data
+        send_char('4');  // Send acknowledge to the PC side after receiving the script successfully.
+        addScript("script4", script_length);
+        flash_write(4);   // put script_string into flash
+
+        state_script = sleep;
+        break;
+
+    case upload_file5:
+        lcd_init();
+        lcd_puts("Uploading File 5");
+        enable_interrupts();
+        enterLPM(lpm_mode);  // expect to receive script data
+        send_char('5');  // Send acknowledge to the PC side after receiving the script successfully.
+        addScript("script5", script_length);
+        flash_write(5);   // put script_string into flash
+
+        state_script = sleep;
+        break;
+
+    case upload_file6:
+        lcd_init();
+        lcd_puts("Uploading File 6");
+        enable_interrupts();
+        enterLPM(lpm_mode);  // expect to receive script data
+        send_char('6');  // Send acknowledge to the PC side after receiving the script successfully.
+        addScript("script6", script_length);
+        flash_write(6);   // put script_string into flash
+
+        state_script = sleep;
+        break;
+
+    case upload_file7:
+        lcd_init();
+        lcd_puts("Uploading File 7");
+        enable_interrupts();
+        enterLPM(lpm_mode);  // expect to receive script data
+        send_char('7');  // Send acknowledge to the PC side after receiving the script successfully.
+        addScript("script7", script_length);
+        flash_write(7);   // put script_string into flash
+
+        state_script = sleep;
+        break;
+
+    case upload_file8:
+        lcd_init();
+        lcd_puts("Uploading File 8");
+        enable_interrupts();
+        enterLPM(lpm_mode);  // expect to receive script data
+        send_char('8');  // Send acknowledge to the PC side after receiving the script successfully.
+        addScript("script8", script_length);
+        flash_write(8);   // put script_string into flash
+
+        state_script = sleep;
+        break;
+
+    case upload_file9:
+        lcd_init();
+        lcd_puts("Uploading File 9");
+        enable_interrupts();
+        enterLPM(lpm_mode);  // expect to receive script data
+        send_char('9');  // Send acknowledge to the PC side after receiving the script successfully.
+        addScript("script9", script_length);
+        flash_write(9);   // put script_string into flash
+
+        state_script = sleep;
+        break;
+
+    case upload_file10:
+        lcd_init();
+        lcd_puts("Uploading File 10");
+        enable_interrupts();
+        enterLPM(lpm_mode);  // expect to receive script data
+        send_char('0');  // Send acknowledge to the PC side after receiving the script successfully.
+        addScript("script10", script_length);
+        flash_write(0);   // put script_string into flash
 
         state_script = sleep;
         break;
@@ -250,6 +334,89 @@ void script_fsm(){
         state_script = sleep;
         break;
 
+    case play_file4:
+            lcd_init();
+            lcd_puts("Playing File4");
+            enable_interrupts();
+            play_script(4);
+            lcd_clear();
+            lcd_puts("Done Playing");
+            lcd_cursor2();
+            lcd_puts("File 4");
+            state_script = sleep;
+            break;
+
+    case play_file5:
+            lcd_init();
+            lcd_puts("Playing File5");
+            enable_interrupts();
+            play_script(5);
+            lcd_clear();
+            lcd_puts("Done Playing");
+            lcd_cursor2();
+            lcd_puts("File 5");
+            state_script = sleep;
+            break;
+
+    case play_file6:
+            lcd_init();
+            lcd_puts("Playing File6");
+            enable_interrupts();
+            play_script(6);
+            lcd_clear();
+            lcd_puts("Done Playing");
+            lcd_cursor2();
+            lcd_puts("File 6");
+            state_script = sleep;
+            break;
+
+    case play_file7:
+            lcd_init();
+            lcd_puts("Playing File7");
+            enable_interrupts();
+            play_script(7);
+            lcd_clear();
+            lcd_puts("Done Playing");
+            lcd_cursor2();
+            lcd_puts("File 7");
+            state_script = sleep;
+            break;
+
+    case play_file8:
+            lcd_init();
+            lcd_puts("Playing File8");
+            enable_interrupts();
+            play_script(8);
+            lcd_clear();
+            lcd_puts("Done Playing");
+            lcd_cursor2();
+            lcd_puts("File 8");
+            state_script = sleep;
+            break;
+
+    case play_file9:
+            lcd_init();
+            lcd_puts("Playing File9");
+            enable_interrupts();
+            play_script(9);
+            lcd_clear();
+            lcd_puts("Done Playing");
+            lcd_cursor2();
+            lcd_puts("File 9");
+            state_script = sleep;
+            break;
+
+    case play_file10:
+            lcd_init();
+            lcd_puts("Playing File10");
+            enable_interrupts();
+            play_script(0);
+            lcd_clear();
+            lcd_puts("Done Playing");
+            lcd_cursor2();
+            lcd_puts("File 10");
+            state_script = sleep;
+            break;
     }
   }
 }
@@ -694,24 +861,40 @@ void set_delay(int delay){
 //------------------------------------------------------------------------------
 void flash_write(int script_num){
    int i=0;
-   int addr=0x1000;
+   int addr=0xFA00;
 //FlashConfig();
 
    switch(script_num){
-    case 1:
-        addr=0x1000;
-    break;
-
-    case 2:
-        addr=0x1040;
-    break;
-
-    case 3:
-        addr=0x1080;
-    break;
+    case 1: addr=0xFA00; break;
+    case 2: addr=0xFA40; break;
+    case 3: addr=0xFA80; break;
+    case 4: addr=0xFAC0; break;
+    case 5: addr=0xFB00; break;
+    case 6: addr=0xFB40; break;
+    case 7: addr=0xFB80; break;
+    case 8: addr=0xFBC0; break;
+    case 9: addr=0xFC00; break;
+    case 0: addr=0xFC40; break;
    }
-
-   init_flash_write(addr);
+   if (script_num == 9 || script_num ==0){
+       if (seg_flag_arr[1] == 0){
+           init_flash_write(addr);
+       }
+       else{
+           cont_flash_write(addr);
+       }
+       seg_flag_arr[1] = 1;
+   }
+   else {
+       if (seg_flag_arr[2] == 0){
+           init_flash_write(addr);
+       }
+       else{
+           cont_flash_write(addr);
+       }
+       seg_flag_arr[2] = 1;
+   }
+   //init_flash_write(addr);
 
    while(script_string[i]!= '$' && i<63){
        write_flash_char((unsigned char)script_string[i]);
