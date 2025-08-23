@@ -22,8 +22,8 @@ void object_detector(){
 
         switch(state_object_detector){  // waits for GUI to play 'start'
         case detector_sleep:
-//            lcd_init();
-//            lcd_puts("Object Detector");
+            lcd_init();
+            lcd_puts("Object Detector");
             enterLPM(lpm_mode);
             break;
 
@@ -695,7 +695,7 @@ void set_delay(int delay){
 void flash_write(int script_num){
    int i=0;
    int addr=0x1000;
-   FlashConfig();
+//FlashConfig();
 
    switch(script_num){
     case 1:
@@ -713,8 +713,8 @@ void flash_write(int script_num){
 
    init_flash_write(addr);
 
-   while(script_string[i]!= '$' && i!=63){
-       write_flash_char(script_string[i]);
+   while(script_string[i]!= '$' && i<63){
+       write_flash_char((unsigned char)script_string[i]);
        i++;
    }
 

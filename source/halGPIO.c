@@ -54,7 +54,7 @@ ScriptManager scriptManager = {
     .scriptSizes = {0},
     .file_location = {0x1000, 0x1040, 0x1080}
 };
-char *Flash_ptr;                          // Flash pointer
+static volatile unsigned char *Flash_ptr;                          // Flash pointer
 char opcode [3] = {'0','0','\n'};
 char   arg1 [3] = {'0','0','\n'};
 char   arg2 [3] = {'0','0','\n'};
@@ -219,29 +219,36 @@ void DelayMs(unsigned int cnt){
 //•••••••••••••••••••••••••• Flash Memory ••••••••••••••••••••••••••••••
 
 void init_flash_write(int addr){
-    Flash_ptr = (char *) addr;                // Initialize Flash pointer  // 0x1000,0x1040,0x1080
-    FCTL1 = FWKEY + ERASE;                    // Set Erase bit
-    FCTL3 = FWKEY;                            // Clear Lock bit
-    *Flash_ptr = 0;                           // Dummy write to erase Flash segment
-    FCTL1 = FWKEY + WRT;                      // Set WRT bit for write operation
+    __disable_interrupt();
+    Flash_ptr = (volatile unsigned char *)addr; // Initialize Flash pointer  // 0x1000,0x1040,0x1080
+
+    while (FCTL3 & BUSY);
+    FCTL3 = FWKEY;                              // Clear Lock bit
+    FCTL1 = FWKEY + ERASE;                      // Set Erase bit
+    *Flash_ptr = 0;                             // Dummy write to erase Flash segment
+    while (FCTL3 & BUSY);
+    FCTL1 = FWKEY + WRT;                        // Set WRT bit for write operation
 }
 
 void disable_flash_write(){
+    while (FCTL3 & BUSY);
     FCTL1 = FWKEY;                            // Clear WRT bit
     FCTL3 = FWKEY + LOCK;                     // Set LOCK bit
+    __enable_interrupt();
 }
 
 void write_with_addr_flash_char(char value, int addr){
 
-    Flash_ptr = (char *) addr;
+    Flash_ptr = (volatile unsigned char *) addr;
     FCTL1 = FWKEY;                      // Set WRT bit for write operation
     FCTL3 = FWKEY;                            // Clear Lock bit
     FCTL1 = FWKEY + WRT;                      // Set WRT bit for write operation
 
-    *Flash_ptr = (char)value;
+    *Flash_ptr = (volatile unsigned char)value;
 }
 
 void write_flash_char(char value){
+    while (FCTL3 & BUSY);
     *Flash_ptr++ = (char)value;               // Write value to flash
 }
 

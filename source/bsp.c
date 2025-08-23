@@ -17,8 +17,8 @@ int ISR_FLAG;   // A flag to decide which interrupt to handle on timer event
 //                              GPIO configuration
 //------------------------------------------------------------------------------
 void GPIOconfig(void){
-//    WDTCTL = WDTHOLD | WDTPW;		  // Stop WDT
-    WDTCTL = WDTPW | WDTHOLD & ~WDTNMI;
+    WDTCTL = WDTHOLD | WDTPW;		  // Stop WDT
+//    WDTCTL = WDTPW | WDTHOLD & ~WDTNMI;
 /* PushButtons Setup */
   
     PBsArrPortSel         &= ~PB0;         // PB0 is I/O
@@ -210,8 +210,8 @@ void UART_Init(){
 //------------------------------------------------------------------------------
             
 void FlashConfig(){
-//    WDTCTL = WDTPW + WDTHOLD;                 // Stop watchdog timer
-    WDTCTL = WDTPW | WDTHOLD & ~WDTNMI;
+    WDTCTL = WDTPW + WDTHOLD;                 // Stop watchdog timer
+//    WDTCTL = WDTPW | WDTHOLD & ~WDTNMI;
 
 //     if (CALBC1_1MHZ==0xFF)                    // If calibration constant erased
 //     {

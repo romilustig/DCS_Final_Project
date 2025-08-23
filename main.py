@@ -33,7 +33,7 @@ def send_angle(angle):
 
 def init_uart():
     global s, inChar
-    s = ser.Serial('COM5', baudrate=9600, bytesize=ser.EIGHTBITS,
+    s = ser.Serial('COM3', baudrate=9600, bytesize=ser.EIGHTBITS,
                    parity=ser.PARITY_NONE, stopbits=ser.STOPBITS_ONE,
                    timeout=1)
     s.reset_input_buffer()
@@ -78,7 +78,7 @@ def command_encoder(data_str):
 
 def receive_ack():
     global s, ACK
-    time.sleep(0.25)
+    #time.sleep(0.25)
     ACK = s.read_until(expected=b'\0').decode('ascii')
 
 
@@ -101,7 +101,7 @@ def receive_char():
     data = b''
     time.sleep(0.25)
     while len(data.decode('ascii')) == 0:
-        data = s.read_until(terminator=b'\n')
+        data = s.read_until(expected=b'\n')
     return data.decode('ascii')
 
 
@@ -598,57 +598,206 @@ def light_objects_detector():
     win.grab_set(); win.wait_window()
 
 
+# def script_mode():
+#     send_command('5')
+#     global ACK
+#     win, root = _make_toplevel("Upload File")
+#
+#     working_directory = "C:\\Users\\Omer Pintel\\Downloads\\DCS-Final-Project-main\\DCS-Final-Project-main\\CCS\\Scripts"
+#
+#     ttk.Label(root, text="Choose a TXT file to upload:").grid(row=0, column=0, sticky="w")
+#     path_var = tk.StringVar()
+#     ttk.Entry(root, textvariable=path_var, width=60).grid(row=1, column=0, sticky="ew")
+#
+#     def browse():
+#         fp = filedialog.askopenfilename(initialdir=working_directory, filetypes=[("text Files", "*.txt")])
+#         if fp:
+#             path_var.set(fp)
+#
+#     ttk.Button(root, text="Browse", command=browse).grid(row=1, column=1, padx=6)
+#
+#     btn_u1 = ttk.Button(root, text="Upload Script1", style="Action.TButton")
+#     btn_p1 = ttk.Button(root, text="Play Script1", style="Action.TButton")
+#     btn_u2 = ttk.Button(root, text="Upload Script2", style="Action.TButton")
+#     btn_p2 = ttk.Button(root, text="Play Script2", style="Action.TButton")
+#     btn_u3 = ttk.Button(root, text="Upload Script3", style="Action.TButton")
+#     btn_p3 = ttk.Button(root, text="Play Script3", style="Action.TButton")
+#     btn_back = ttk.Button(root, text="Back", style="Action.TButton")
+#     row = 2
+#     for b in (btn_u1, btn_p1, btn_u2, btn_p2, btn_u3, btn_p3, btn_back):
+#         b.grid(row=row, column=0, sticky="w", pady=3)
+#         row += 1
+#
+#     status_lbl = ttk.Label(root, text="", font=("Segoe UI", 10, "bold"))
+#     status_lbl.grid(row=row, column=0, sticky="w", pady=(8,2))
+#
+#     out = _make_output(root)
+#
+#     def set_controls(state: str):
+#         for b in (btn_u1, btn_p1, btn_u2, btn_p2, btn_u3, btn_p3, btn_back):
+#             b.config(state=state)
+#
+#     def do_upload(slot: str):
+#         nonlocal path_var
+#         set_controls("disabled")
+#         send_command(slot)
+#         file_address = path_var.get()
+#         script = open(file_address)
+#         string = command_encoder(script.read())
+#         print(os.path.basename(script.name))
+#         command = str(len(string).to_bytes(1, 'big'))[2]
+#         send_command(command)
+#         send_data(string)
+#         receive_ack()
+#         set_controls("normal")
+#
+#     def do_play(slot: str, label: str):
+#         nonlocal status_lbl
+#         set_controls("disabled")
+#         send_command(slot)
+#         status_lbl.config(text=f"{label}, Please wait.")
+#         while True:
+#             win.update()
+#             opcode = receive_char()
+#             opcode_dict = {
+#                 '1': "Increment char on LCD from 0 to 'x'",
+#                 '2': "Decrement char on LCD from 'x' to 0",
+#                 '3': "Right rotating char 'x' on LCD Screen",
+#                 '4': "Setting delay value",
+#                 '5': "Clearing LCD screen",
+#                 '6': "Moving sensor to specific angle and measure distance",
+#                 '7': "Scanning environment from angle1 to angle2",
+#                 '8': "MSP goes back to sleep mode"
+#             }
+#             out.insert("end", f"Playing Opcode {opcode}: ", "blue_text")
+#             print(f"({opcode_dict[opcode]})")
+#             if opcode == '6':
+#                 distance = int(receive_data())
+#                 angle = int(receive_data())
+#                 print(f"Measured Distance: {distance} [cm], Measured Angle: {angle} [°]")
+#             elif opcode == '7':
+#                 distance_arr = []
+#                 angle1 = int(receive_data())
+#                 angle2 = int(receive_data())
+#                 while True:
+#                     win.update()
+#                     distance = int(receive_data())
+#                     if distance == 999:
+#                         break
+#                     print(f"Measured Distance: {distance} [cm]")
+#                     distance_arr.append(distance)
+#                 degree_arr = [
+#                     round(float(angle1) + i * (float(angle2) - float(angle1)) / (len(distance_arr) - 1), 1)
+#                     for i in range(len(distance_arr))]
+#                 print(f"Distance array: {distance_arr}")
+#                 print(f"Degree array: {degree_arr}")
+#                 draw_scanner_map(distance_arr, degree_arr)
+#             elif opcode == '8':
+#                 break
+#         set_controls("normal")
+#
+#     btn_u1.config(command=lambda: do_upload('A'))
+#     btn_u2.config(command=lambda: do_upload('B'))
+#     btn_u3.config(command=lambda: do_upload('C'))
+#
+#     btn_p1.config(command=lambda: do_play('D', 'Playing Script1'))
+#     btn_p2.config(command=lambda: do_play('E', 'Playing Script2'))
+#     btn_p3.config(command=lambda: do_play('F', 'Playing Script3'))
+#
+#     # def go_back():
+#     #     send_command('0')
+#     #     win.destroy()
+#
+#     btn_back.config(command=lambda: (send_command('0'), win.destroy()))
+#
+#     def update_status():
+#         global ACK
+#         if ACK == '1':
+#             status_lbl.config(text="Script1 Transferred")
+#         elif ACK == '2':
+#             status_lbl.config(text="Script2 Transferred")
+#         elif ACK == '3':
+#             status_lbl.config(text="Script3 Transferred")
+#         else:
+#             status_lbl.config(text="")
+#         win.after(250, update_status)
+#
+#     update_status()
+#     win.grab_set(); win.wait_window()
 def script_mode():
     send_command('5')
     global ACK
     win, root = _make_toplevel("Upload File")
 
-    working_directory = "C:\\Users\\David Lustig\\Downloads"
+    working_directory = r"C:\Users\Omer Pintel\Downloads\DCS-Final-Project-main\DCS-Final-Project-main\CCS\Scripts"
 
     ttk.Label(root, text="Choose a TXT file to upload:").grid(row=0, column=0, sticky="w")
     path_var = tk.StringVar()
-    ttk.Entry(root, textvariable=path_var, width=60).grid(row=1, column=0, sticky="ew")
+    ttk.Entry(root, textvariable=path_var, width=60).grid(row=1, column=0, columnspan=2, sticky="ew")
 
     def browse():
-        fp = filedialog.askopenfilename(initialdir=working_directory, filetypes=[("text Files", "*.txt")])
+        fp = filedialog.askopenfilename(initialdir=working_directory, filetypes=[("Text Files", "*.txt")])
         if fp:
             path_var.set(fp)
 
-    ttk.Button(root, text="Browse", command=browse).grid(row=1, column=1, padx=6)
+    ttk.Button(root, text="Browse", command=browse).grid(row=1, column=2, padx=6)
 
-    btn_u1 = ttk.Button(root, text="Upload Script1", style="Action.TButton")
-    btn_p1 = ttk.Button(root, text="Play Script1", style="Action.TButton")
-    btn_u2 = ttk.Button(root, text="Upload Script2", style="Action.TButton")
-    btn_p2 = ttk.Button(root, text="Play Script2", style="Action.TButton")
-    btn_u3 = ttk.Button(root, text="Upload Script3", style="Action.TButton")
-    btn_p3 = ttk.Button(root, text="Play Script3", style="Action.TButton")
-    btn_back = ttk.Button(root, text="Back", style="Action.TButton")
-    row = 2
-    for b in (btn_u1, btn_p1, btn_u2, btn_p2, btn_u3, btn_p3, btn_back):
-        b.grid(row=row, column=0, sticky="w", pady=3)
-        row += 1
+    # === Button grid ===
+    # Store references for controlling later
+    button_refs = []
 
+    for x in range(1, 11):  # slots 1–10
+        # Create buttons
+        btn_file = ttk.Button(root, text=f"Upload File_{x}", style="Action.TButton")
+        btn_script = ttk.Button(root, text=f"Upload Script_{x}", style="Action.TButton")
+        btn_play = ttk.Button(root, text=f"Play {x}", style="Action.TButton")
+
+        # Place them in same row, different columns
+        btn_file.grid(row=x + 2, column=0, padx=4, pady=3, sticky="ew")
+        btn_script.grid(row=x + 2, column=1, padx=4, pady=3, sticky="ew")
+        btn_play.grid(row=x + 2, column=2, padx=4, pady=3, sticky="ew")
+
+        # Save references if you want to attach logic later
+        button_refs.append((btn_file, btn_script, btn_play))
+
+    # Back button (full width at bottom)
+    btn_back = ttk.Button(root, text="Back", style="Action.TButton",
+                          command=lambda: (send_command('0'), win.destroy()))
+    btn_back.grid(row=13, column=0, columnspan=3, pady=(10, 5), sticky="ew")
+
+    # Make all columns expand equally and keep button size consistent
+    for c in range(3):
+        root.grid_columnconfigure(c, weight=1, uniform="col")
+
+    # === Status label ===
     status_lbl = ttk.Label(root, text="", font=("Segoe UI", 10, "bold"))
-    status_lbl.grid(row=row, column=0, sticky="w", pady=(8,2))
+    status_lbl.grid(row=14, column=0, columnspan=3, sticky="w", pady=(8, 2))
 
+    win.update_idletasks()  # Let Tk calculate layout
+    w = win.winfo_reqwidth()
+    h = win.winfo_reqheight()
+    win.geometry(f"{w}x{h}")
     out = _make_output(root)
 
+    # === Functions to set button states ===
     def set_controls(state: str):
-        for b in (btn_u1, btn_p1, btn_u2, btn_p2, btn_u3, btn_p3, btn_back):
-            b.config(state=state)
+        for trio in button_refs:
+            for b in trio:
+                b.config(state=state)
+        btn_back.config(command=lambda: (send_command('0'), win.destroy()))
 
+    # === Example handlers (you can expand for all x) ===
     def do_upload(slot: str):
         nonlocal path_var
         set_controls("disabled")
         send_command(slot)
         file_address = path_var.get()
-        script = open(file_address)
-        string = command_encoder(script.read())
-        print(os.path.basename(script.name))
-        command = str(len(string).to_bytes(1, 'big'))[2]
-        send_command(command)
-        send_data(string)
-        receive_ack()
+        with open(file_address) as script:
+            string = command_encoder(script.read())
+            command = str(len(string).to_bytes(1, 'big'))[2]
+            send_command(command)
+            send_data(string)
+            receive_ack()
         set_controls("normal")
 
     def do_play(slot: str, label: str):
@@ -656,74 +805,41 @@ def script_mode():
         set_controls("disabled")
         send_command(slot)
         status_lbl.config(text=f"{label}, Please wait.")
-        while True:
-            win.update()
-            opcode = receive_char()
-            opcode_dict = {
-                '1': "Increment char on LCD from 0 to 'x'",
-                '2': "Decrement char on LCD from 'x' to 0",
-                '3': "Right rotating char 'x' on LCD Screen",
-                '4': "Setting delay value",
-                '5': "Clearing LCD screen",
-                '6': "Moving sensor to specific angle and measure distance",
-                '7': "Scanning environment from angle1 to angle2",
-                '8': "MSP goes back to sleep mode"
-            }
-            out.insert("end", f"Playing Opcode {opcode}: ", "blue_text")
-            print(f"({opcode_dict[opcode]})")
-            if opcode == '6':
-                distance = int(receive_data())
-                angle = int(receive_data())
-                print(f"Measured Distance: {distance} [cm], Measured Angle: {angle} [°]")
-            elif opcode == '7':
-                distance_arr = []
-                angle1 = int(receive_data())
-                angle2 = int(receive_data())
-                while True:
-                    win.update()
-                    distance = int(receive_data())
-                    if distance == 999:
-                        break
-                    print(f"Measured Distance: {distance} [cm]")
-                    distance_arr.append(distance)
-                degree_arr = [
-                    round(float(angle1) + i * (float(angle2) - float(angle1)) / (len(distance_arr) - 1), 1)
-                    for i in range(len(distance_arr))]
-                print(f"Distance array: {distance_arr}")
-                print(f"Degree array: {degree_arr}")
-                draw_scanner_map(distance_arr, degree_arr)
-            elif opcode == '8':
-                break
+        # (Your opcode handling logic here...)
         set_controls("normal")
 
-    btn_u1.config(command=lambda: do_upload('A'))
-    btn_u2.config(command=lambda: do_upload('B'))
-    btn_u3.config(command=lambda: do_upload('C'))
+    attach_dict = {
+        0:"AB",
+        1:"CD",
+        2:"EF",
+        3:"GH",
+        4:"IJ",
+        5:"KL",
+        6:"MN",
+        7:"OP",
+        8:"QR",
+        9:"ST",
+    }
+    # Attach handlers
+    for i,button in enumerate(button_refs):
+        button[0].config(command=lambda v=i: do_upload(attach_dict[v][0]))
+        button[1].config(command=lambda v=i: do_upload(attach_dict[v][0]))
+        button[2].config(command=lambda v=i: do_play(attach_dict[v][1],f"Playing {i+1}"))
 
-    btn_p1.config(command=lambda: do_play('D', 'Playing Script1'))
-    btn_p2.config(command=lambda: do_play('E', 'Playing Script2'))
-    btn_p3.config(command=lambda: do_play('F', 'Playing Script3'))
-
-    # def go_back():
-    #     send_command('0')
-    #     win.destroy()
-
-    btn_back.config(command=lambda: (send_command('0'), win.destroy()))
-
+    # Status updater
     def update_status():
         global ACK
-        if ACK == '1':
-            status_lbl.config(text="Script1 Transferred")
-        elif ACK == '2':
-            status_lbl.config(text="Script2 Transferred")
-        elif ACK == '3':
-            status_lbl.config(text="Script3 Transferred")
-        else:
-            status_lbl.config(text="")
+        status_map = {
+            '1': "Script1 Transferred",
+            '2': "Script2 Transferred",
+            '3': "Script3 Transferred",
+        }
+        status_lbl.config(text=status_map.get(ACK, ""))
         win.after(250, update_status)
 
     update_status()
-    # win.grab_set(); win.wait_window()
+    win.grab_set(); win.wait_window()
+
 
 
 def light_calibrate():
