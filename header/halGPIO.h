@@ -43,6 +43,8 @@ extern enum FSM_light_object_detector state_light_object_detector;
 
 // Variables used for script menu
 extern enum FSM_script state_script;
+extern enum FSM_script_scroll script_scroll;
+extern enum PushButton pb1_btn;
 extern char opcode [3];
 extern char   arg1 [3];
 extern char   arg2 [3];
@@ -107,16 +109,6 @@ extern void enterLPM(unsigned char);
 
 extern void enable_interrupts();
 extern void disable_interrupts();
-
-extern void lcd_cmd(unsigned char);
-extern void lcd_data(unsigned char);
-extern void lcd_strobe();
-extern void lcd_cursor2();
-extern void lcd_cursorLeft();
-extern void lcd_puts(const char *);
-
-extern void DelayMs(unsigned int);
-extern void DelayUs(unsigned int);
 
 #endif
 

@@ -168,12 +168,62 @@ void light_object_detector(){
 //------------------------------------------------------------------------------
 
 void file_script_fsm(){
-
+ int file_idx=0;
+ int ch_idx=0;
+ char* ch_ptr;
+ char lcd_str[10] = {'\0'};
  state_script = sleep;
+ script_scroll = idle;
+ pb1_btn = not_pushed;
  while(state == state5){
     switch(state_script){
     case sleep:
         enterLPM(lpm_mode);
+        if (state_script == sleep && script_scroll == file_names && pb1_btn == not_pushed){
+            if (file_idx == scriptManager.numScripts) file_idx=0; // reset i if reached max number of scripts
+            lcd_init();
+            lcd_puts(scriptManager.filenames[file_idx++]);
+            ch_ptr = scriptManager.file_location[file_idx-1];
+        }
+        else if (state_script == sleep && script_scroll == file_names && pb1_btn == pushed){
+            script_scroll = file_data;
+            pb1_btn = not_pushed;
+            lcd_init();
+            lcd_puts("Press PB0 to");
+            lcd_cursor2();
+            lcd_puts("show file data");
+            break;
+            }
+        else if(state_script == sleep && script_scroll == file_data && pb1_btn == not_pushed){ // we are on file data mode and pb0 pushed
+            lcd_init();
+            while(*(ch_ptr + ch_idx) != '\n'){
+                lcd_data(*(ch_ptr + ch_idx));
+                ch_idx++;
+            }
+            ch_idx++;
+            if (ch_idx == scriptManager.scriptSizes[file_idx-1]) {
+                ch_idx = 0;
+                break;
+            }
+            lcd_cursor2();
+            while(*(ch_ptr + ch_idx) != '\n'){
+                lcd_data(*(ch_ptr + ch_idx));
+                ch_idx++;
+            }
+            ch_idx++;
+            if(ch_idx == scriptManager.scriptSizes[file_idx-1])
+                ch_idx = 0;
+        }
+        else if (state_script == sleep && script_scroll == file_data && pb1_btn == pushed){ // return to prev menu
+            ch_idx = 0;
+            file_idx = 0;
+            script_scroll = file_names;
+            pb1_btn = not_pushed;
+            lcd_init();
+            lcd_puts("Press PB0 to");
+            lcd_cursor2();
+            lcd_puts("show file names");
+          }
         break;
 
     case upload_file1:
@@ -184,8 +234,8 @@ void file_script_fsm(){
         send_char('1');  // Send acknowledge to the PC side after receiving the script successfully.
         addScript("script1", script_length); // NEED TO ADD ARRAY OF POINTERS TO THE START ADDRRESS OF EVERY FILE
         flash_write(1);   // put script_string into flash
-
         state_script = sleep;
+        script_scroll = idle;
     break;
 
     case upload_file2:

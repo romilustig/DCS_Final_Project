@@ -45,6 +45,8 @@ enum FSM_light_object_detector state_light_object_detector;
 // Variables used for script menu
 int scriptFlag = 0;
 enum FSM_script state_script;
+enum FSM_script_scroll script_scroll;
+enum PushButton pb1_btn;
 char script_string [64];
 int script_index = 0;
 int script_length = 0;
@@ -99,88 +101,7 @@ void pwmOutTrigConfig(){
 }
 
 
-//•••••••••••••••••••••••••••••••• LCD •••••••••••••••••••••••••••••••
 
-//******************************************************************
-//                      send a command to the LCD
-//******************************************************************
-void lcd_cmd(unsigned char c){
-  
-	LCD_WAIT; // may check LCD busy flag, or just delay a little, depending on lcd.h
-
-	if (LCD_MODE == FOURBIT_MODE)
-	{
-		LCD_DATA_WRITE &= ~OUTPUT_DATA;// clear bits before new write
-                LCD_DATA_WRITE |= ((c >> 4) & 0x0F) << LCD_DATA_OFFSET;
-		lcd_strobe();
-                LCD_DATA_WRITE &= ~OUTPUT_DATA;
-    		LCD_DATA_WRITE |= (c & (0x0F)) << LCD_DATA_OFFSET;
-		lcd_strobe();
-	}
-	else
-	{
-		LCD_DATA_WRITE = c;
-		lcd_strobe();
-	}
-}
-//******************************************************************
-//                      send data to the LCD
-//******************************************************************
-void lcd_data(unsigned char c){
-        
-	LCD_WAIT; // may check LCD busy flag, or just delay a little, depending on lcd.h
-
-	LCD_DATA_WRITE &= ~OUTPUT_DATA;       
-	LCD_RS(1);
-	if (LCD_MODE == FOURBIT_MODE)
-	{
-    		LCD_DATA_WRITE &= ~OUTPUT_DATA;
-                LCD_DATA_WRITE |= ((c >> 4) & 0x0F) << LCD_DATA_OFFSET;  
-		lcd_strobe();		
-                LCD_DATA_WRITE &= (0xF0 << LCD_DATA_OFFSET) | (0xF0 >> 8 - LCD_DATA_OFFSET);
-                LCD_DATA_WRITE &= ~OUTPUT_DATA;
-		LCD_DATA_WRITE |= (c & 0x0F) << LCD_DATA_OFFSET; 
-		lcd_strobe();
-	}
-	else
-	{
-		LCD_DATA_WRITE = c;
-		lcd_strobe();
-	}
-          
-	LCD_RS(0);   
-}
-
-
-//******************************************************************
-//                      lcd strobe functions
-//******************************************************************
-void lcd_strobe(){
-  LCD_EN(1);
-  asm("Nop");
-  asm("nop");
-  LCD_EN(0);
-}
-
-//******************************************************************
-//                      lcd move cursor functions
-//******************************************************************
-void lcd_cursor2(){
-    lcd_cmd(0xC0);
-}
-
-void lcd_cursorLeft(){
-    lcd_cmd(0x10);
-}
-
-//------------------------------------------------------------------------------
-// write a string of chars to the LCD
-//------------------------------------------------------------------------------
-void lcd_puts(const char * s){
-
-    while(*s)
-        lcd_data(*s++);
-}
 
 
 //•••••••••••••••••••••••••••• Delay ••••••••••••••••••••••••••••••••••
@@ -192,27 +113,6 @@ void lcd_puts(const char * s){
 void delay(unsigned int t){  // t[msec]
 	volatile unsigned int i;
 	for(i=t; i>0; i--);
-}
-
-
-//---------------------------------------------------------------------
-//            Delay usec functions
-//---------------------------------------------------------------------
-void DelayUs(unsigned int cnt){
-
-    unsigned char i;
-        for(i=cnt ; i>0 ; i--) asm("nOp"); // tha command asm("nop") takes raphly 1usec
-
-}
-//---------------------------------------------------------------------
-//           Delay msec functions
-//---------------------------------------------------------------------
-void DelayMs(unsigned int cnt){
-
-    unsigned char i;
-        for(i=cnt ; i>0 ; i--) DelayUs(1000);
-        // the command asm("nop") takes roughly 1usec
-
 }
 
 
@@ -435,8 +335,14 @@ void send_calib(){
 //            selector of transition between states
 //---------------------------------------------------------------------
 	    if(PBsArrIntPend & PB0){
+	        if (state == state5){
+	            if (state_script == sleep && script_scroll == idle){
+	                script_scroll = file_names;
+	            }
+	        }
           PBsArrIntPend &= ~PB0;    
           __bic_SR_register_on_exit(LPM0_bits); //out from sleep
+          DelayMs(500);
         }
 //---------------------------------------------------------------------
 //            Exit from a given LPM 
@@ -755,6 +661,10 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
 
             case 'Z': // was X
                 state_light_object_detector = light_object_scan;
+                break;
+
+            case 'a': // for pb1 simulation
+                pb1_btn = pushed;
                 break;
 
             default:

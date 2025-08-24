@@ -53,7 +53,7 @@ void main(void){
 
         break;
 
-    case state5:    // Script
+    case state5:    // File/Script
         lcd_init();
         lcd_puts("File/Script Mode");
         enable_interrupts();

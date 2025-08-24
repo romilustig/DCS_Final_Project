@@ -39,6 +39,14 @@ extern void ADCsampLDRconfig(void);
 extern void UART_Init(void);
 extern void FlashConfig(void);
 extern void lcd_init(void);
+extern void lcd_cmd(unsigned char);
+extern void lcd_data(unsigned char);
+extern void lcd_strobe();
+extern void lcd_cursor2();
+extern void lcd_cursorLeft();
+extern void lcd_puts(const char *);
+extern void DelayUs(unsigned int);
+extern void DelayMs(unsigned int);
 extern int d;
 extern int ISR_FLAG;
 extern int seg_flag_arr[3];
@@ -165,14 +173,14 @@ extern int seg_flag_arr[3];
 /*----------------------------------------------------------
   CONFIG: change values according to your port pin selection
 ------------------------------------------------------------*/
-#define LCD_EN(a)	    (!a ? (P2OUT&=~0X02) : (P2OUT|=0X02)) // P2.1 is lcd enable pin // INSTEAD OF 2.5 (0X20)
-#define LCD_EN_DIR(a)	(!a ? (P2DIR&=~0X02) : (P2DIR|=0X02)) // P2.1 pin direction     // INSTEAD OF 2.5 (0X20)
+#define LCD_EN(a)	    (!a ? (P2OUT&=~BIT3) : (P2OUT|=BIT3)) // P2.1 is lcd enable pin // INSTEAD OF 2.5 (0X20)
+#define LCD_EN_DIR(a)	(!a ? (P2DIR&=~BIT3) : (P2DIR|=BIT3)) // P2.1 pin direction     // INSTEAD OF 2.5 (0X20)
 
-#define LCD_RS(a)	    (!a ? (P2OUT&=~0X08) : (P2OUT|=0X08)) // P2.3 is lcd RS pin     // INSTEAD OF 2.6 (0X40)
-#define LCD_RS_DIR(a)	(!a ? (P2DIR&=~0X08) : (P2DIR|=0X08)) // P2.3 pin direction     // INSTEAD OF 2.6 (0X40)
-  
-#define LCD_RW(a)	    (!a ? (P2OUT&=~0X20) : (P2OUT|=0X20)) // P2.5 is lcd RW pin     // INSTEAD OF 2.7 (0X80)
-#define LCD_RW_DIR(a)	(!a ? (P2DIR&=~0X20) : (P2DIR|=0X20)) // P2.5 pin direction     // INSTEAD OF 2.7 (0X80)
+#define LCD_RS(a)	    (!a ? (P2OUT&=~BIT5) : (P2OUT|=BIT5)) // P2.3 is lcd RS pin     // INSTEAD OF 2.6 (0X40)
+#define LCD_RS_DIR(a)	(!a ? (P2DIR&=~BIT5) : (P2DIR|=BIT5)) // P2.3 pin direction     // INSTEAD OF 2.6 (0X40)
+
+#define LCD_RW(a)	    (!a ? (P2OUT&=~BIT7) : (P2OUT|=BIT7)) // P2.5 is lcd RW pin     // INSTEAD OF 2.7 (0X80)
+#define LCD_RW_DIR(a)	(!a ? (P2DIR&=~BIT7) : (P2DIR|=BIT7)) // P2.5 pin direction     // INSTEAD OF 2.7 (0X80)
 
 #define LCD_DATA_OFFSET 0x04 //data pin selection offset for 4 bit mode, variable range is 0-4, default 0 - Px.0-3, no offset
    

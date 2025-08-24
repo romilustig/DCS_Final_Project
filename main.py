@@ -600,10 +600,15 @@ def file_mode():
         btn_play.grid(  row=x+2, column=2, padx=4, pady=3, sticky="ew")
         button_refs.append((btn_file, btn_script, btn_play))
 
+    root.grid_columnconfigure(0, weight=2)
+    root.grid_columnconfigure(1, weight=1)
+    # PB1 simulated
+    btn_pb1 = ttk.Button(root, text="PB1", style="Action.TButton",command=lambda: (send_command('a')))
+    btn_pb1.grid( row=13, column=1, pady=(10,5), sticky="ew")
     # Back button (full width at bottom of left section)
     btn_back = ttk.Button(root, text="Back", style="Action.TButton",
                           command=lambda: (send_command('0'), win.destroy()))
-    btn_back.grid(row=13, column=0, columnspan=3, pady=(10, 5), sticky="ew")
+    btn_back.grid(row=13, column=0, pady=(10, 5), sticky="ew")
 
     # Make columns 0..2 uniform; give column 3 (output) extra weight
     for c in range(3):

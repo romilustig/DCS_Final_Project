@@ -7,6 +7,8 @@ enum FSMstate{state0,state1,state2,state3,state4, state5, state6, state7, state8
 enum FSM_script{sleep,
 upload_file1,upload_file2,upload_file3,upload_file4,upload_file5,upload_file6,upload_file7,upload_file8,upload_file9, upload_file10
 ,play_file1, play_file2, play_file3, play_file4, play_file5, play_file6,play_file7, play_file8, play_file9, play_file10};
+enum FSM_script_scroll{idle,file_names,file_data};
+enum PushButton{not_pushed,pushed};
 enum FSM_telemeter{tele_sleep, tele_action};
 enum FSM_object_detector{detector_sleep, detector_action};
 enum FSM_light_detector{light_sleep, light_calibrate, light_scan};

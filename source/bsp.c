@@ -63,6 +63,8 @@ void GPIOconfig(void){
 
 }
 
+//•••••••••••••••••••••••••••••••• LCD •••••••••••••••••••••••••••••••
+
 //------------------------------------------------------------------------------
 //                             LCD Init
 //------------------------------------------------------------------------------
@@ -71,7 +73,7 @@ void lcd_init(void){
 
     char init_value;
 
-        P2SEL &= 0xD5; // 11010101 clear bits p2.5, p2.3, p2.1
+        P2SEL &= ~(BIT3 | BIT5 | BIT7); //LCD_CTL_SEL
 
     if (LCD_MODE == FOURBIT_MODE) init_value = 0x3 << LCD_DATA_OFFSET;
         else init_value = 0x3F;
@@ -111,6 +113,89 @@ void lcd_init(void){
     lcd_cmd(0x6); //Entry Mode
     lcd_cmd(0x80); //Initialize DDRAM address to zero
 }
+
+
+//******************************************************************
+//                      send a command to the LCD
+//******************************************************************
+void lcd_cmd(unsigned char c){
+
+    LCD_WAIT; // may check LCD busy flag, or just delay a little, depending on lcd.h
+
+    if (LCD_MODE == FOURBIT_MODE)
+    {
+        LCD_DATA_WRITE &= ~OUTPUT_DATA;// clear bits before new write
+                LCD_DATA_WRITE |= ((c >> 4) & 0x0F) << LCD_DATA_OFFSET;
+        lcd_strobe();
+                LCD_DATA_WRITE &= ~OUTPUT_DATA;
+            LCD_DATA_WRITE |= (c & (0x0F)) << LCD_DATA_OFFSET;
+        lcd_strobe();
+    }
+    else
+    {
+        LCD_DATA_WRITE = c;
+        lcd_strobe();
+    }
+}
+//******************************************************************
+//                      send data to the LCD
+//******************************************************************
+void lcd_data(unsigned char c){
+
+    LCD_WAIT; // may check LCD busy flag, or just delay a little, depending on lcd.h
+
+    LCD_DATA_WRITE &= ~OUTPUT_DATA;
+    LCD_RS(1);
+    if (LCD_MODE == FOURBIT_MODE)
+    {
+            LCD_DATA_WRITE &= ~OUTPUT_DATA;
+                LCD_DATA_WRITE |= ((c >> 4) & 0x0F) << LCD_DATA_OFFSET;
+        lcd_strobe();
+                LCD_DATA_WRITE &= (0xF0 << LCD_DATA_OFFSET) | (0xF0 >> 8 - LCD_DATA_OFFSET);
+                LCD_DATA_WRITE &= ~OUTPUT_DATA;
+        LCD_DATA_WRITE |= (c & 0x0F) << LCD_DATA_OFFSET;
+        lcd_strobe();
+    }
+    else
+    {
+        LCD_DATA_WRITE = c;
+        lcd_strobe();
+    }
+
+    LCD_RS(0);
+}
+
+
+//******************************************************************
+//                      lcd strobe functions
+//******************************************************************
+void lcd_strobe(){
+  LCD_EN(1);
+  asm("Nop");
+  asm("nop");
+  LCD_EN(0);
+}
+
+//******************************************************************
+//                      lcd move cursor functions
+//******************************************************************
+void lcd_cursor2(){
+    lcd_cmd(0xC0);
+}
+
+void lcd_cursorLeft(){
+    lcd_cmd(0x10);
+}
+
+//------------------------------------------------------------------------------
+// write a string of chars to the LCD
+//------------------------------------------------------------------------------
+void lcd_puts(const char * s){
+
+    while(*s)
+        lcd_data(*s++);
+}
+
 
 
 //------------------------------------------------------------------------------
@@ -224,4 +309,25 @@ void FlashConfig(){
      FCTL2 = FWKEY + FSSEL0 + FN1;             // MCLK/3 for Flash Timing Generator
 }
 
+//---------------------------------------------------------------------
+//            Delay usec functions
+//---------------------------------------------------------------------
+void DelayUs(unsigned int cnt){
+
+    unsigned char i;
+        for(i=cnt ; i>0 ; i--) asm("nOp"); // tha command asm("nop") takes raphly 1usec
+
+}
+
+
+//---------------------------------------------------------------------
+//           Delay msec functions
+//---------------------------------------------------------------------
+void DelayMs(unsigned int cnt){
+
+    unsigned char i;
+        for(i=cnt ; i>0 ; i--) DelayUs(1000);
+        // the command asm("nop") takes roughly 1usec
+
+}
 
