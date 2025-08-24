@@ -48,8 +48,11 @@ enum FSM_script state_script;
 enum FSM_script_scroll script_scroll;
 enum PushButton pb1_btn;
 char script_string [64];
+char filename_string[MAX_FILENAME_LENGTH];
 int script_index = 0;
+int filename_index = 0;
 int script_length = 0;
+int filename_length = 0;
 ScriptManager scriptManager = {
     .numScripts = 0,
     .filenames = {NULL},
@@ -490,7 +493,7 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
 #else
 #error Compiler not supported!
 #endif
-{
+{   int i;
     // --------- Receive telemeter angle ---------
     if (tele_angle_flag == 1){
         angle_char_arr[tele_index++] = UCA0RXBUF;
@@ -510,6 +513,20 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
     else if (scriptFlag == 2){
         script_string[script_index++] = UCA0RXBUF;
         if (script_index == script_length+1){
+            scriptFlag = 3;
+        }
+    }
+    else if (scriptFlag == 3){
+        filename_length = (int)UCA0RXBUF;
+        filename_index = 0;
+        for(i=0; i< 8; i++)
+            filename_string[i] = '\0';
+        scriptFlag = 4;
+    }
+    else if (scriptFlag == 4){
+        filename_string[filename_index++] = UCA0RXBUF;
+        if (filename_index == filename_length+1){
+            filename_string[filename_index-1] = '\0';  // to remove '$'
             scriptFlag = 0;
             __bic_SR_register_on_exit(LPM0_bits);//out from sleep
         }

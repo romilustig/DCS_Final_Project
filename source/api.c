@@ -232,7 +232,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('1');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script1", script_length); // NEED TO ADD ARRAY OF POINTERS TO THE START ADDRRESS OF EVERY FILE
+        addScript(filename_string, script_length, 1); // NEED TO ADD ARRAY OF POINTERS TO THE START ADDRRESS OF EVERY FILE
         flash_write(1);   // put script_string into flash
         state_script = sleep;
         script_scroll = idle;
@@ -244,7 +244,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('2');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script2", script_length);
+        addScript(filename_string, script_length, 2);
         flash_write(2);   // put script_string into flash
 
 
@@ -257,7 +257,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('3');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script3", script_length);
+        addScript(filename_string, script_length, 3);
         flash_write(3);   // put script_string into flash
 
         state_script = sleep;
@@ -269,7 +269,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('4');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script4", script_length);
+        addScript(filename_string, script_length, 4);
         flash_write(4);   // put script_string into flash
 
         state_script = sleep;
@@ -281,7 +281,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('5');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script5", script_length);
+        addScript(filename_string, script_length, 5);
         flash_write(5);   // put script_string into flash
 
         state_script = sleep;
@@ -293,7 +293,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('6');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script6", script_length);
+        addScript(filename_string, script_length, 6);
         flash_write(6);   // put script_string into flash
 
         state_script = sleep;
@@ -305,7 +305,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('7');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script7", script_length);
+        addScript(filename_string, script_length, 7);
         flash_write(7);   // put script_string into flash
 
         state_script = sleep;
@@ -317,7 +317,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('8');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script8", script_length);
+        addScript(filename_string, script_length, 8);
         flash_write(8);   // put script_string into flash
 
         state_script = sleep;
@@ -329,7 +329,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('9');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script9", script_length);
+        addScript(filename_string, script_length, 9);
         flash_write(9);   // put script_string into flash
 
         state_script = sleep;
@@ -341,7 +341,7 @@ void file_script_fsm(){
         enable_interrupts();
         enterLPM(lpm_mode);  // expect to receive script data
         send_char('0');  // Send acknowledge to the PC side after receiving the script successfully.
-        addScript("script10", script_length);
+        addScript(filename_string, script_length, 10);
         flash_write(0);   // put script_string into flash
 
         state_script = sleep;
@@ -788,21 +788,21 @@ void play_script(int script_num){
 // A function to update the struct after successfully receiving a script
 //------------------------------------------------------------------------------
 
-void addScript(const char * filename, int scriptSize) {
+void addScript(const char * filename, int scriptSize, int num_file) {
     if (scriptManager.numScripts >= MAX_SCRIPTS) {
         // Maximum number of scripts reached
         return;
     }
-
+    if(scriptManager.filenames[num_file-1][0] == 0){
+    // Increment the number of scripts
+        scriptManager.numScripts++;
+    }
     // Copy the filename to the fixed-length array
-    strncpy(scriptManager.filenames[scriptManager.numScripts], filename, MAX_FILENAME_LENGTH - 1);
+    strncpy(scriptManager.filenames[num_file-1], filename, MAX_FILENAME_LENGTH - 1);
     scriptManager.filenames[scriptManager.numScripts][MAX_FILENAME_LENGTH - 1] = '\0';
 
     // Store the script size
-    scriptManager.scriptSizes[scriptManager.numScripts] = scriptSize;
-
-    // Increment the number of scripts
-    scriptManager.numScripts++;
+    scriptManager.scriptSizes[num_file-1] = scriptSize;
 }
 
 

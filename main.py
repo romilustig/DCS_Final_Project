@@ -655,14 +655,22 @@ def file_mode():
         set_controls("disabled")
         send_command(slot)
         file_address = path_var.get()
+        file_name = os.path.basename(file_address)
+        file_name = file_name.split('.')
+        file_name = file_name[0]
         with open(file_address) as file:
             if file_flag:
                 string = file_command_encoder(file.read())
             else:
                 string = file.read()
+            # send file date
             command = str(len(string).to_bytes(1, 'big'))[2]
             send_command(command)
             send_data(string)
+            # send file name
+            command = chr(len(file_name))
+            send_command(command)
+            send_data(file_name)
             receive_ack()
         set_controls("normal")
 

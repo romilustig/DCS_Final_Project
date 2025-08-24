@@ -25,7 +25,7 @@ void sample_LDR_x(int);
 void flash_write(int);
 void flash_write_calib(int, int);
 void play_script(int);
-void addScript(const char*, int);
+void addScript(const char*, int, int);
 void lcd_puts(const char * s);
 void div16(int, int, int *, int *);
 extern void send_calib_arr();

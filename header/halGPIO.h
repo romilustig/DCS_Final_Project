@@ -11,6 +11,8 @@
 
 //------Exporting configuration functions and variables to higher hierarchies-----------
 
+#define MAX_SCRIPTS 10
+#define MAX_FILENAME_LENGTH 15 // including "\0"
 
 // General variables
 extern enum FSMstate state;        
@@ -52,9 +54,10 @@ extern int  opcode_int;
 extern int    arg1_int;
 extern int    arg2_int;
 extern char script_string [64];
+extern char filename_string[MAX_FILENAME_LENGTH];
 extern int script_length;
-#define MAX_SCRIPTS 10
-#define MAX_FILENAME_LENGTH 8 // including "\0"
+extern int filename_length;
+extern int filename_index;
 
 typedef struct {
     char numScripts;
