@@ -178,10 +178,14 @@ void file_script_fsm(){
  while(state == state5){
     switch(state_script){
     case sleep:
+        lpm_mode = mode0;
         enterLPM(lpm_mode);
         if (state_script == sleep && script_scroll == file_names && pb1_btn == not_pushed){
-            if (file_idx == scriptManager.numScripts) file_idx=0; // reset i if reached max number of scripts
+            if (file_idx == MAX_SCRIPTS) file_idx=0; // reset i if reached max number of scripts
             lcd_init();
+            lcd_puts("file number: ");
+            lcd_data((char)(file_idx+1+48));
+            lcd_cursor2();
             lcd_puts(scriptManager.filenames[file_idx++]);
             ch_ptr = scriptManager.file_location[file_idx-1];
         }
@@ -356,7 +360,7 @@ void file_script_fsm(){
         lcd_puts("Done Playing");
         lcd_cursor2();
         lcd_puts("File 1");
-
+        state = state5;
         state_script = sleep;
         break;
 
@@ -701,7 +705,7 @@ void sample_LDR_x(int LDR_index){
 void play_script(int script_num){
     char d_string [12] = {'d',' ','=',' ','$','$',' ','[','m','s',']','\0'};
     int sleep_state_flag = 0;
-    int start_addr = 0x1000;
+    int start_addr = 0xFA00;
 
     start_addr = scriptManager.file_location[script_num-1]; // get script's start addr in flash
     char * read_ptr = (char *) start_addr; // set the pointer to the start address.

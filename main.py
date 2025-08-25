@@ -664,7 +664,8 @@ def file_mode():
             else:
                 string = file.read()
             # send file date
-            command = str(len(string).to_bytes(1, 'big'))[2]
+            #command = str(len(string).to_bytes(1, 'big'))[2]
+            command = chr(len(string))
             send_command(command)
             send_data(string)
             # send file name
@@ -830,13 +831,13 @@ def main():
     style = ttk.Style(root)
     style.configure("Nav.TButton", font=("Segoe UI Emoji", 16, "bold"), padding=(20, 14))
     style.configure("Action.TButton", font=("Segoe UI", 13), padding=(16, 12))
-    root.title("Light Source and Object Proximity Detector System")
+    root.title("DCS Final Project - Omer Pintel & Romi Lustig")
     root.geometry("980x640")
 
     # Top bar
     top = ttk.Frame(root, padding=(10,8))
     top.pack(side="top", fill="x")
-    ttk.Label(top, text="Light Source & Object Proximity Detector", font=("Segoe UI", 16, "bold")).pack(side="left")
+    ttk.Label(top, text="Light Source & Object Proximity Detector System", font=("Segoe UI", 16, "bold")).pack(side="left")
     status_var = tk.StringVar(value="Ready")
     ttk.Label(top, textvariable=status_var, foreground="#64748B").pack(side="right")
 
@@ -852,7 +853,17 @@ def main():
 
     # Right content (home info)
     home_title = ttk.Label(content, text="Welcome!", font=("Segoe UI", 14, "bold"))
-    home_desc = ttk.Label(content, text="Use the navigation to open a feature. The UI is fully rewritten in Tkinter.")
+    home_desc = ttk.Label(content,
+        text=(
+        "This interface was designed by Omer Pintel and Romi Lustig as part of\nour DCS Final Project.\n\n"
+        "Through this system you can:\n"
+        " • Detect and visualize nearby objects using ultrasonic scanning\n"
+        " • Measure distances at specific angles with the telemeter\n"
+        " • Identify and track light sources in your environment\n"
+        " • Combine object and light detection\n"
+        " • Upload, store, and play custom scripts on the MSP430\n"
+        " • Calibrate the light sensors for precise measurements\n\n"
+        "Use the navigation panel on the left to get started."),font=("Segoe UI", 12))
     home_title.pack(anchor="w")
     home_desc.pack(anchor="w", pady=(0,10))
 
@@ -885,10 +896,10 @@ def main():
     try:
         init_uart()
         init_calibrate()
-        status_var.set("Connected and calibrated from MSP")
+        status_var.set("Connected to MSP")
     except Exception as e:
         status_var.set(f"Startup issue: {e}")
-        messagebox.showerror("Startup", f"Could not complete startup handshake.\n\n{e}")
+        messagebox.showerror("Startup", f"Startup Failed.\n\n{e}")
 
     root.mainloop()
 

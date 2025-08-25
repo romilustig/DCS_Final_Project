@@ -135,7 +135,7 @@ void init_flash_write(int addr){
 
 void cont_flash_write(int addr){
     __disable_interrupt();
-    Flash_ptr = (volatile unsigned char *)addr; // Initialize Flash pointer  // 0x1000,0x1040,0x1080
+    Flash_ptr = (volatile unsigned char *)addr; // Initialize Flash pointer
 
     while (FCTL3 & BUSY);
     FCTL3 = FWKEY;                              // Clear Lock bit
