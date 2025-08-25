@@ -12,6 +12,7 @@ enum PushButton{not_pushed,pushed};
 enum FSM_telemeter{tele_sleep, tele_action};
 enum FSM_object_detector{detector_sleep, detector_action};
 enum FSM_light_detector{light_sleep, light_calibrate, light_scan};
+enum FSM_light_calibration{light_calibration_sleep, light_calibration_act};
 enum FSM_light_object_detector{light_object_sleep, light_object_scan};
 enum SYSmode{mode0,mode1,mode2,mode3,mode4}; 
 //------------------------------------------------------------------------------

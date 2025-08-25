@@ -379,7 +379,7 @@ def telemeter():
         if dynamic_flag["val"]:
             distance = int(receive_data())
             angle = int(receive_data())
-            out.insert("end", f"Distance: {distance:>3} [cm] | Angle: {angle:>3} [°]\n")
+            out.insert("end", f"Distance: {distance:>3} [cm]\n")
             out.see("end")
             win.after(100, poll)
 
@@ -763,7 +763,7 @@ def file_mode():
 
 
 def light_calibrate():
-    send_command('3')
+    # send_command('3')
     win, root = _make_toplevel("Light Detector Calibrate")
 
     btn_cal = ttk.Button(root, text="Calibrate Using PB0", style="Action.TButton")
@@ -779,39 +779,19 @@ def light_calibrate():
 
     out = _make_output(root)
 
-    def calibrate():
-        LDR_calibrate_arr = []
-        btn_back.config(state="disabled")
-        btn_cal.config(state="disabled")
-        btn_cal.config(text="Press PB0 to calibrate")
-        pbar['value'] = 0
-        out_lbl.config(text="")
-        send_command('X')
-        for i in range(10):
-            win.update()
-            time.sleep(0.05)
-            out.insert("end", f"Press PB0 to take a sample: {i + 1}\n")
-            out.see("end")
-            out.update_idletasks()
-            LDR1_val = int(receive_data()) / 292
-            LDR2_val = int(receive_data()) / 292
-            LDR1_val_trunc = f"{LDR1_val:.2f}"
-            LDR2_val_trunc = f"{LDR2_val:.2f}"
-            LDRavg_val_trunc = f"{((LDR1_val + LDR2_val) / 2):.2f}"
-            out.insert("end", f"Left LDR value: {LDR1_val_trunc} [V]| Right LDR value: {LDR2_val_trunc} [V]\n")
-            out.insert("end", f"Average value: {LDRavg_val_trunc} [V]\n")
-            LDR_calibrate_arr.append((LDR1_val + LDR2_val) / 2)
-            pbar['value'] = i + 1
-            out_lbl.config(text=f"sample {i + 1} received")
-            time.sleep(0.05)
-        btn_back.config(state="normal")
-        btn_cal.config(text="Done Calibrating!")
-        pbar['value'] = 0
-        expanded = expand_calibration_array(LDR_calibrate_arr, 50)
-        save_calibration_values(expanded)
+    # def calibrate():
+    #     LDR_calibrate_arr = []
+    #     btn_back.config(state="disabled")
+    #     btn_cal.config(state="disabled")
+    #     btn_cal.config(text="Press PB0 to calibrate")
+    #     out_lbl.config(text="")
+    #     send_command('X')
+    #     btn_back.config(state="normal")
+    #     btn_cal.config(text="Press PB0 10 Times")
 
 
-    btn_cal.config(command=calibrate)
+    # btn_cal.config(command=calibrate)
+    btn_cal.config(command=lambda: (send_command('X'), win.destroy()))
     btn_back.config(command=lambda: (send_command('0'), win.destroy()))
 
     win.grab_set(); win.wait_window()

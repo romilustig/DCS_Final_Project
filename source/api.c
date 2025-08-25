@@ -99,16 +99,9 @@ void light_detector(){
                 enterLPM(lpm_mode);  // expect to PB0 Press
                 disable_interrupts();
 
-//                sample_LDR_x(1);             // Sample LDR1 (left),  changes the global LDR_val array
-//                send_LDR_value();   // Send value to PC
-//
-//
-//                __delay_cycles(200000);
-//
-//                sample_LDR_x(2);             // Sample LDR2 (right), changes the global LDR_val array
-//                send_LDR_value();   // Send value to PC
+               sample_LDR_x(1);             // Sample LDR1 (left),  changes the global LDR_val array
+               sample_LDR_x(2);             // Sample LDR2 (right), changes the global LDR_val array
 
-                meas_and_send_ldr();
 
                 flash_write_calib(avg_sample, 0X10B4 + calibrate_index);
                 calibrate_index++;
@@ -117,6 +110,7 @@ void light_detector(){
                 if (calibrate_index == 10){
                        calibrate_index = 0;
                        state_light_detector = light_sleep;
+                       state = state0;
                        disable_flash_write();
                 }
                 break;
@@ -475,6 +469,47 @@ void file_script_fsm(){
     }
   }
 }
+
+
+//------------------------------------------------------------------------------
+// 7. Light sources calibration
+//------------------------------------------------------------------------------
+
+void light_calibration(){
+    state_light_calibration = light_calibration_sleep;
+      while(state == state7){
+           switch(state_light_calibration){
+        case light_calibration_sleep:
+            lcd_init();
+            lcd_puts("Light Calibration");
+            enable_interrupts();
+            enterLPM(lpm_mode);
+            break;
+
+        case light_calibration_act:
+            lcd_init();
+            lcd_puts("Calibrating");
+            disable_interrupts();
+            sample_LDR_x(1);             // Sample LDR1 (left),  changes the global LDR_val array
+            sample_LDR_x(2);             // Sample LDR2 (right), changes the global LDR_val array
+
+            flash_write_calib(avg_sample, 0X10B4 + calibrate_index);
+            calibrate_index++;
+
+            if (calibrate_index == 1){ // TODO: CHANGE TO 10
+                lcd_init();
+                lcd_puts("Done!");
+                calibrate_index = 0;
+                enable_interrupts();
+                state = state0;
+                break;
+            }
+
+            state_light_calibration = light_calibration_sleep;
+           }
+      }
+}
+
 
 //••••••••••••••••••••••••••••••• Helper Functions •••••••••••••••••••••••••••••
 

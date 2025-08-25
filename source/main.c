@@ -13,6 +13,7 @@ void main(void){
 	case state0:
 	    lcd_init();
 	    lcd_puts("Main Menu");
+	    enable_interrupts();
         enterLPM(lpm_mode);
         break;
 
@@ -64,6 +65,13 @@ void main(void){
     case state6:    // Send Calibration array
         enable_interrupts();
         send_calib_arr();
+        state = state0;
+        break;
+
+    case state7:    // Light calibrate
+        lcd_init();
+        lcd_puts("Light Calibration");
+        light_calibration();
         state = state0;
         break;
 	}

@@ -76,6 +76,9 @@ int diff;
 int timer_counter = 0;
 
 
+// Variables used for light calibration
+enum FSM_light_calibration state_light_calibration;
+
 //•••••••••••••••••••••••••••••• Configs ••••••••••••••••••••••••••••••
 
 void sysConfig(void){ 
@@ -342,8 +345,11 @@ void send_calib(){
 	            if (state_script == sleep && script_scroll == idle){
 	                script_scroll = file_names;
 	            }
-	            DelayMs(500);
 	        }
+	        else if(state == state7){
+	            state_light_calibration = light_calibration_act;
+	        }
+	      DelayMs(500);
           PBsArrIntPend &= ~PB0;    
           __bic_SR_register_on_exit(LPM0_bits); //out from sleep
         }
@@ -669,7 +675,7 @@ void __attribute__ ((interrupt(USCIAB0RX_VECTOR))) USCI0RX_ISR (void)
                 state_telemeter = tele_sleep;
 
             case 'X': // was J
-                state_light_detector = light_calibrate;
+                state = state7;
                 break;
 
             case 'Y': // was K

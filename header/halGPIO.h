@@ -43,6 +43,8 @@ extern void write_with_addr_flash_char(char, int);
 // Variables used for Light & Object Detector function
 extern enum FSM_light_object_detector state_light_object_detector;
 
+extern enum FSM_light_calibration state_light_calibration;
+
 // Variables used for script menu
 extern enum FSM_script state_script;
 extern enum FSM_script_scroll script_scroll;
