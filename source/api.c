@@ -99,15 +99,16 @@ void light_detector(){
                 enterLPM(lpm_mode);  // expect to PB0 Press
                 disable_interrupts();
 
-                sample_LDR_x(1);             // Sample LDR1 (left),  changes the global LDR_val array
-                send_LDR_value();   // Send value to PC
+//                sample_LDR_x(1);             // Sample LDR1 (left),  changes the global LDR_val array
+//                send_LDR_value();   // Send value to PC
+//
+//
+//                __delay_cycles(200000);
+//
+//                sample_LDR_x(2);             // Sample LDR2 (right), changes the global LDR_val array
+//                send_LDR_value();   // Send value to PC
 
-
-                __delay_cycles(200000);
-
-                sample_LDR_x(2);             // Sample LDR2 (right), changes the global LDR_val array
-                send_LDR_value();   // Send value to PC
-
+                meas_and_send_ldr();
 
                 flash_write_calib(avg_sample, 0X10B4 + calibrate_index);
                 calibrate_index++;

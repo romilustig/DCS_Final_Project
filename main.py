@@ -93,7 +93,7 @@ def receive_data2():
     chr_ = b''
     while chr_[-1:] != b'\n':
         chr_ += s.read(1)
-    print(chr_)
+    #print(chr_)
     return chr_
 
 
@@ -593,7 +593,7 @@ def file_mode():
     for x in range(1, 11):  # slots 1–10
         btn_file   = ttk.Button(root, text=f"Upload File_{x}",   style="Action.TButton")
         btn_script = ttk.Button(root, text=f"Upload Script_{x}", style="Action.TButton")
-        btn_play   = ttk.Button(root, text=f"Play {x}",          style="Action.TButton")
+        btn_play   = ttk.Button(root, text=f"Play {x}",          style="Action.TButton", state="disabled")
 
         btn_file.grid(  row=x+2, column=0, padx=4, pady=3, sticky="ew")
         btn_script.grid(row=x+2, column=1, padx=4, pady=3, sticky="ew")
@@ -650,9 +650,10 @@ def file_mode():
         btn_back.config(state=state)  # <- you had a small bug setting command here
 
     # === Your handlers (unchanged, but consider calling out.see('end') after inserts)
-    def do_upload(slot: str, file_flag: bool):
+    def do_upload(index: int, slot: str, file_flag: bool):
         nonlocal path_var
-        set_controls("disabled")
+        button_refs[index][0].config(state="disabled")
+        button_refs[index][1].config(state="disabled")
         send_command(slot)
         file_address = path_var.get()
         file_name = os.path.basename(file_address)
@@ -673,11 +674,14 @@ def file_mode():
             send_command(command)
             send_data(file_name)
             receive_ack()
-        set_controls("normal")
+        button_refs[index][0].config(state="disabled")
+        button_refs[index][1].config(state="disabled")
+        button_refs[index][2].config(state="normal")
+        # set_controls("normal")
 
     def do_play(slot: str, label: str):
         nonlocal status_lbl
-        set_controls("disabled")
+        #set_controls("disabled")
         send_command(slot)
         status_lbl.config(text=f"{label}, Please wait.")
         while True:
@@ -725,16 +729,15 @@ def file_mode():
             elif opcode == '8':
                 break
 
-        set_controls("normal")
+        #set_controls("normal")
 
     attach_dict = {
         0:"AB", 1:"CD", 2:"EF", 3:"GH", 4:"IJ",
         5:"KL", 6:"MN", 7:"OP", 8:"QR", 9:"ST",
     }
     for i, button in enumerate(button_refs):
-        button[0].config(command=lambda v=i: do_upload(slot=attach_dict[v][0], file_flag=True))
-        button[1].config(command=lambda v=i: do_upload(slot=attach_dict[v][0], file_flag=False))
-        # FIX: use v in the f-string too
+        button[0].config(command=lambda v=i: do_upload(v, slot=attach_dict[v][0], file_flag=True))
+        button[1].config(command=lambda v=i: do_upload(v, slot=attach_dict[v][0], file_flag=False))
         button[2].config(command=lambda v=i: do_play(attach_dict[v][1], f"Playing {v+1}"))
 
     def update_status():
@@ -783,10 +786,13 @@ def light_calibrate():
         btn_cal.config(text="Press PB0 to calibrate")
         pbar['value'] = 0
         out_lbl.config(text="")
-        send_command('Z')
+        send_command('X')
         for i in range(10):
             win.update()
+            time.sleep(0.05)
             out.insert("end", f"Press PB0 to take a sample: {i + 1}\n")
+            out.see("end")
+            out.update_idletasks()
             LDR1_val = int(receive_data()) / 292
             LDR2_val = int(receive_data()) / 292
             LDR1_val_trunc = f"{LDR1_val:.2f}"

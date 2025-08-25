@@ -342,10 +342,10 @@ void send_calib(){
 	            if (state_script == sleep && script_scroll == idle){
 	                script_scroll = file_names;
 	            }
+	            DelayMs(500);
 	        }
           PBsArrIntPend &= ~PB0;    
           __bic_SR_register_on_exit(LPM0_bits); //out from sleep
-          DelayMs(500);
         }
 //---------------------------------------------------------------------
 //            Exit from a given LPM 
