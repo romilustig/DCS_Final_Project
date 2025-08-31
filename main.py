@@ -52,7 +52,7 @@ def send_data(data_str):
 
 def send_command(char):
     global s
-    s.write(bytes(char, 'ascii'))
+    s.write(bytes(char, 'ascii', errors='ignore'))
     time.sleep(0.05)
 
 
