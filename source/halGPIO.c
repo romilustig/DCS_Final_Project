@@ -89,6 +89,9 @@ void sysConfig(void){
 
 
 void pwmOutServoConfig(int freq){
+    // timer1 - timer A1
+    // timer2 - timer A0
+
       Timer_1_CCR0 = (int) 20000;
       Timer_1_CCR2 = (int) freq;                 // PWM Duty Cycle
                                                  // Min=200,

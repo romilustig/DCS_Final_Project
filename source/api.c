@@ -558,7 +558,8 @@ void servo_scan(int angle1, int angle2, int dist_or_light_flag){
         enable_timerA0(); //enable the timer with delay of d[msec]
         enterLPM(lpm_mode);
         disable_timerA0();
-        curr_angle += 32;
+        //curr_angle += 32;
+        curr_angle += 10;
         pwmOutServoConfig(curr_angle);
         __delay_cycles(50000);
         if (dist_or_light_flag == 1){

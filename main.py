@@ -143,29 +143,21 @@ def measure_two_ldr_samples():
 
 
 def find_fitting_index(ldr1_value, ldr2_value):
-    with open('calibration_values.txt', 'r') as file:
+    with open('calibration_values_2.txt', 'r') as file:
         calibration_arr = [float(line.strip()) for line in file]
     average_ldr_value = (ldr1_value + ldr2_value) / 2
-    left = 0
-    right = len(calibration_arr) - 1
-    fitting_value = None
-    while left <= right:
-        mid = (left + right) // 2
-        if calibration_arr[mid] == average_ldr_value:
-            fitting_value = calibration_arr[mid]
-            break
-        elif calibration_arr[mid] > average_ldr_value:
-            fitting_value = calibration_arr[mid]
-            left = mid + 1
-        else:
-            fitting_value = calibration_arr[mid]
-            right = mid - 1
-    if fitting_value is None:
-        if average_ldr_value < calibration_arr[-1]:
-            fitting_value = calibration_arr[-1]
-        elif average_ldr_value > calibration_arr[0]:
-            fitting_value = calibration_arr[0]
-    return 49 - calibration_arr.index(fitting_value)
+
+    # Find closest value
+    min_diff = float("inf")
+    fitting_index = 0
+    for i, val in enumerate(calibration_arr):
+        diff = abs(val - average_ldr_value)
+        if diff < min_diff:
+            min_diff = diff
+            fitting_index = i
+
+    # Return the index (0..49)
+    return fitting_index
 
 import mplcursors
 
@@ -438,7 +430,7 @@ def lights_detector():
         btn_back.config(state="disabled")
         btn_scan.config(state="disabled")
         distance_arr = []
-        masking_distance = 49
+        masking_distance = 50
         send_command('Y')
         angle1 = int(receive_data())
         angle2 = int(receive_data())
